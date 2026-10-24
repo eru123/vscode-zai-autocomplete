@@ -2,7 +2,7 @@
   "name": "vscode-zai-autocomplete",
   "displayName": "ZAI GLM Autocomplete",
   "description": "Inline code completion for VS Code and VSCodium, powered by the GLM Coding Plan (Z.AI). Ghost-text suggestions from glm-5.3-flash and friends.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "eru123",
   "license": "MIT",
   "repository": {
@@ -58,6 +58,12 @@
         "command": "zaiAutocomplete.showLogs",
         "title": "Show Logs",
         "category": "ZAI Autocomplete"
+      },
+      {
+        "command": "zaiAutocomplete.generateCommitMessage",
+        "title": "Generate Commit Message",
+        "category": "ZAI Autocomplete",
+        "icon": "$(sparkle)"
       }
     ],
     "configuration": {
@@ -139,6 +145,18 @@
           "default": true,
           "description": "Send thinking: disabled so reasoning models answer directly. Turn off if your endpoint rejects the parameter."
         },
+        "zaiAutocomplete.commitModel": {
+          "type": "string",
+          "default": "glm-5.3",
+          "markdownDescription": "Model used for commit message generation. This is a one-shot call, so a stronger model is a fine choice. Leave empty to reuse the completion model."
+        },
+        "zaiAutocomplete.maxCommitDiffChars": {
+          "type": "integer",
+          "default": 60000,
+          "minimum": 2000,
+          "maximum": 400000,
+          "description": "Commit message generation reads at most this many characters of diff."
+        },
         "zaiAutocomplete.excludeLanguages": {
           "type": "array",
           "items": {
@@ -162,6 +180,15 @@
           "description": "Show the GLM status bar item."
         }
       }
+    },
+    "menus": {
+      "scm/title": [
+        {
+          "command": "zaiAutocomplete.generateCommitMessage",
+          "when": "scmProvider == git",
+          "group": "navigation"
+        }
+      ]
     }
   },
   "scripts": {

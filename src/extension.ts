@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { GlmInlineCompletionProvider, ProviderState } from './completionProvider';
+import { buildCommitMessages, cleanCommitMessage } from './commitMessage';
 import { readSettings, SECTION, SECRET_KEY } from './config';
+import { collectChanges, getGitApi, pickRepository } from './gitScm';
+import { GlmError, requestCompletion } from './glmClient';
 import { StatusBar } from './statusBar';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -118,6 +121,75 @@ export function activate(context: vscode.ExtensionContext): void {
     () => channel.show()
   );
 
+  let commitBusy = false;
+  const generateCommitMessage = vscode.commands.registerCommand(
+    'zaiAutocomplete.generateCommitMessage',
+    async () => {
+      if (commitBusy) {
+        return;
+      }
+      const settings = readSettings();
+      const apiKey = await getApiKey();
+      if (!apiKey) {
+        vscode.window.showInformationMessage(
+          'ZAI Autocomplete: set an API key first with the "ZAI Autocomplete: Set API Key" command.'
+        );
+        return;
+      }
+      const git = await getGitApi();
+      const repo = git ? pickRepository(git) : undefined;
+      if (!repo) {
+        vscode.window.showInformationMessage('ZAI Autocomplete: no git repository found.');
+        return;
+      }
+
+      commitBusy = true;
+      try {
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.SourceControl,
+            title: 'GLM: writing commit message',
+            cancellable: true,
+          },
+          async (_progress, token) => {
+            const changes = await collectChanges(repo, settings.maxCommitDiffChars);
+            if (!changes) {
+              vscode.window.showInformationMessage(
+                'No staged or unstaged changes to describe.'
+              );
+              return;
+            }
+            const { text } = await requestCompletion(
+              {
+                baseUrl: settings.baseUrl,
+                model: settings.commitModel.trim() || settings.model,
+                messages: buildCommitMessages(changes),
+                maxTokens: settings.maxTokens,
+                temperature: settings.temperature,
+                disableThinking: settings.disableThinking,
+                timeoutMs: settings.timeoutMs,
+              },
+              apiKey,
+              token
+            );
+            const message = cleanCommitMessage(text);
+            if (!message) {
+              vscode.window.showWarningMessage('GLM returned an empty commit message.');
+              return;
+            }
+            repo.inputBox.value = message;
+          }
+        );
+      } catch (err) {
+        const message = err instanceof GlmError ? err.message : String(err);
+        log(`commit message error: ${message}`);
+        vscode.window.showErrorMessage(`ZAI Autocomplete: ${message}`);
+      } finally {
+        commitBusy = false;
+      }
+    }
+  );
+
   const configWatcher = vscode.workspace.onDidChangeConfiguration((e) => {
     if (e.affectsConfiguration(SECTION)) {
       refreshUi();
@@ -131,6 +203,7 @@ export function activate(context: vscode.ExtensionContext): void {
     toggle,
     trigger,
     showLogs,
+    generateCommitMessage,
     configWatcher,
     statusBar,
     channel

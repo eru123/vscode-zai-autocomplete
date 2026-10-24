@@ -15,6 +15,8 @@ export interface Settings {
   maxCompletionLines: number;
   timeoutMs: number;
   disableThinking: boolean;
+  commitModel: string;
+  maxCommitDiffChars: number;
   excludeLanguages: string[];
   maxFileChars: number;
   showStatusBar: boolean;
@@ -35,6 +37,8 @@ export function readSettings(): Settings {
     maxCompletionLines: get('maxCompletionLines', 8),
     timeoutMs: get('timeoutMs', 10000),
     disableThinking: get('disableThinking', true),
+    commitModel: get('commitModel', 'glm-5.3'),
+    maxCommitDiffChars: get('maxCommitDiffChars', 60000),
     excludeLanguages: get('excludeLanguages', ['plaintext', 'log']),
     maxFileChars: get('maxFileChars', 200000),
     showStatusBar: get('showStatusBar', true),
