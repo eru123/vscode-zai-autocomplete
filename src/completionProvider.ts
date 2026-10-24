@@ -109,6 +109,7 @@ export class GlmInlineCompletionProvider
         return undefined;
       }
 
+      this.deps.onState('idle');
       return [new vscode.InlineCompletionItem(insert, new vscode.Range(position, position))];
     } catch (err) {
       if (token.isCancellationRequested || abort.signal.aborted) {
