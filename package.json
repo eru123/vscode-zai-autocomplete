@@ -1,0 +1,175 @@
+{
+  "name": "vscode-zai-autocomplete",
+  "displayName": "ZAI GLM Autocomplete",
+  "description": "Inline code completion for VS Code and VSCodium, powered by the GLM Coding Plan (Z.AI). Ghost-text suggestions from glm-5.3-flash and friends.",
+  "version": "0.1.0",
+  "publisher": "eru123",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eru123/vscode-zai-autocomplete.git"
+  },
+  "icon": "icon.png",
+  "keywords": [
+    "autocomplete",
+    "ai",
+    "glm",
+    "z.ai",
+    "zhipu",
+    "inline completion",
+    "copilot",
+    "codium"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "engines": {
+    "vscode": "^1.84.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "zaiAutocomplete.setApiKey",
+        "title": "Set API Key",
+        "category": "ZAI Autocomplete"
+      },
+      {
+        "command": "zaiAutocomplete.clearApiKey",
+        "title": "Clear API Key",
+        "category": "ZAI Autocomplete"
+      },
+      {
+        "command": "zaiAutocomplete.toggle",
+        "title": "Enable/Disable Suggestions",
+        "category": "ZAI Autocomplete"
+      },
+      {
+        "command": "zaiAutocomplete.trigger",
+        "title": "Suggest Completion at Cursor",
+        "category": "ZAI Autocomplete"
+      },
+      {
+        "command": "zaiAutocomplete.showLogs",
+        "title": "Show Logs",
+        "category": "ZAI Autocomplete"
+      }
+    ],
+    "configuration": {
+      "title": "ZAI Autocomplete",
+      "properties": {
+        "zaiAutocomplete.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Master switch for inline suggestions."
+        },
+        "zaiAutocomplete.baseUrl": {
+          "type": "string",
+          "default": "https://api.z.ai/api/coding/paas/v4",
+          "markdownDescription": "GLM Coding Plan endpoint (OpenAI protocol). Keep the default for the coding plan; use `https://api.z.ai/api/paas/v4` for a pay-as-you-go API key."
+        },
+        "zaiAutocomplete.model": {
+          "type": "string",
+          "enum": [
+            "glm-5.3-flash",
+            "glm-5.3",
+            "glm-5.3-flashx",
+            "glm-5.2",
+            "glm-4.7"
+          ],
+          "default": "glm-5.3-flash",
+          "markdownDescription": "Model used for completions. `glm-5.3-flash` is the fastest; `glm-5.3-flashx` needs a plan tier that includes it."
+        },
+        "zaiAutocomplete.maxTokens": {
+          "type": "integer",
+          "default": 256,
+          "minimum": 16,
+          "maximum": 2048,
+          "description": "Upper bound on generated tokens per suggestion."
+        },
+        "zaiAutocomplete.temperature": {
+          "type": "number",
+          "default": 0.2,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Sampling temperature. Low values keep suggestions predictable."
+        },
+        "zaiAutocomplete.debounceMs": {
+          "type": "integer",
+          "default": 300,
+          "minimum": 0,
+          "maximum": 5000,
+          "description": "Wait this long after the last keystroke before asking the model."
+        },
+        "zaiAutocomplete.prefixChars": {
+          "type": "integer",
+          "default": 3000,
+          "minimum": 200,
+          "maximum": 60000,
+          "description": "How much text before the cursor is sent as context."
+        },
+        "zaiAutocomplete.suffixChars": {
+          "type": "integer",
+          "default": 1500,
+          "minimum": 0,
+          "maximum": 60000,
+          "description": "How much text after the cursor is sent as context."
+        },
+        "zaiAutocomplete.maxCompletionLines": {
+          "type": "integer",
+          "default": 8,
+          "minimum": 1,
+          "maximum": 64,
+          "description": "Hard cap on suggestion length, in lines."
+        },
+        "zaiAutocomplete.timeoutMs": {
+          "type": "integer",
+          "default": 10000,
+          "minimum": 1000,
+          "maximum": 60000,
+          "description": "Abort a request after this many milliseconds."
+        },
+        "zaiAutocomplete.disableThinking": {
+          "type": "boolean",
+          "default": true,
+          "description": "Send thinking: disabled so reasoning models answer directly. Turn off if your endpoint rejects the parameter."
+        },
+        "zaiAutocomplete.excludeLanguages": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["plaintext", "log"],
+          "description": "Language IDs that never get suggestions."
+        },
+        "zaiAutocomplete.maxFileChars": {
+          "type": "integer",
+          "default": 200000,
+          "minimum": 2000,
+          "description": "Skip files larger than this many characters."
+        },
+        "zaiAutocomplete.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the GLM status bar item."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test \"out/test/*.test.js\"",
+    "package": "vsce package",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "1.84.0",
+    "@vscode/vsce": "^3.1.0",
+    "typescript": "^5.4.5"
+  }
+}
