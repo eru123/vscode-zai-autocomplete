@@ -141,8 +141,13 @@
         },
         "zaiAutocomplete.excludeLanguages": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": ["plaintext", "log"],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "plaintext",
+            "log"
+          ],
           "description": "Language IDs that never get suggestions."
         },
         "zaiAutocomplete.maxFileChars": {
@@ -162,7 +167,7 @@
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node --test \"out/test/*.test.js\"",
+    "test": "npm run compile && node --test out/test/*.test.js",
     "package": "vsce package",
     "vscode:prepublish": "npm run compile"
   },
